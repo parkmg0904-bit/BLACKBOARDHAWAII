@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BLACK BOARD</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--black:#000;--white:#fff;--border:#1f1f1f;}
+body{background:var(--black);color:var(--white);font-family:'Arial Black','Arial Bold',Arial,sans-serif;overflow-x:hidden;}
+#menu-btn{position:fixed;top:22px;left:24px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;gap:6px;z-index:500;pointer-events:all;}
+#menu-btn span{display:block;width:30px;height:2px;background:#fff;transition:all .3s;}
+#menu-btn.open span:nth-child(1){transform:translateY(8px) rotate(45deg);}
+#menu-btn.open span:nth-child(2){opacity:0;}
+#menu-btn.open span:nth-child(3){transform:translateY(-8px) rotate(-45deg);}
+#logo{cursor:pointer;transition:opacity .2s;user-select:none;position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:200;}
+#logo img{height:66px;display:block;}
+#logo.dim{opacity:.18;}
+#side-menu{position:fixed;top:0;left:0;width:33vw;min-width:280px;height:100%;background:var(--black);z-index:250;transform:translateX(-100%);transition:transform .38s cubic-bezier(.77,0,.175,1);display:flex;flex-direction:column;border-right:1px solid #2a2a2a;}
+#side-menu.open{transform:translateX(0);}
+#menu-label{font-size:1.14rem;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:#fff;padding:28px 36px 0;text-align:right;margin-bottom:28px;}
+#side-menu nav{display:flex;flex-direction:column;}
+.nav-top{font-size:.9rem;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:#fff;padding:8px 36px;text-align:right;cursor:pointer;user-select:none;transition:opacity .15s;line-height:1.2;}
+.nav-top:hover{opacity:.35;}
+.nav-sub{overflow:hidden;max-height:0;transition:max-height .32s cubic-bezier(.77,0,.175,1);}
+.nav-sub.open{max-height:600px;}
+.nav-sub a{display:block;font-size:.9rem;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:#2a2a2a;text-decoration:none;padding:8px 36px;text-align:right;line-height:1.2;transition:color .15s;}
+.nav-sub a:hover{color:#666;}
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:240;pointer-events:none;transition:background .38s;}
+#overlay.show{background:rgba(0,0,0,.55);pointer-events:all;}
+#main{transition:transform .38s cubic-bezier(.77,0,.175,1);}
+#main.shifted{transform:translateX(33vw);}
+#home{display:block;}
+.video-block{width:100%;height:80vh;display:flex;align-items:center;justify-content:center;}
+.yt-iframe{width:62%;aspect-ratio:16/9;height:auto;border:none;display:block;}
+.section-page{display:none;padding:90px 40px 80px;}
+.section-page.active{display:block;}
+.section-title{font-size:2.2rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;margin-bottom:32px;border-bottom:1px solid var(--border);padding-bottom:12px;}
+.filter-bar{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;}
+.filter-btn{background:none;border:1px solid #2a2a2a;color:#444;font-family:'Arial Black',Arial,sans-serif;font-size:.55rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;padding:6px 14px;cursor:pointer;transition:all .2s;}
+.filter-btn:hover,.filter-btn.active{border-color:#fff;color:#fff;}
+.grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;}
+.grid-item{aspect-ratio:3/4;background:#080808;cursor:pointer;border:1px solid #0f0f0f;transition:opacity .2s;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;overflow:hidden;position:relative;}
+.grid-item:hover{opacity:.55;}
+.grid-item-num{font-size:1.5rem;font-weight:900;color:#555;}
+.grid-item-label{font-size:.5rem;font-weight:900;letter-spacing:.15em;color:#444;text-align:center;padding:0 6px;text-transform:uppercase;}
+#detail-view{display:none;position:fixed;inset:0;background:var(--black);z-index:400;overflow-y:auto;}
+#detail-view.open{display:flex;}
+#detail-close{position:fixed;top:20px;right:24px;background:none;border:none;color:#fff;font-size:.65rem;font-weight:900;letter-spacing:.3em;text-transform:uppercase;cursor:pointer;z-index:410;}
+#detail-prev,#detail-next{position:fixed;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:1.4rem;font-weight:900;cursor:pointer;z-index:410;padding:20px 16px;opacity:.25;transition:opacity .2s;user-select:none;}
+#detail-prev:hover,#detail-next:hover{opacity:1;}
+#detail-prev{left:8px;}#detail-next{right:8px;}
+#detail-prev.hidden,#detail-next.hidden{opacity:0;pointer-events:none;}
+.detail-inner{display:flex;width:100%;min-height:100vh;padding:76px 48px 60px;}
+.detail-img-wrap{flex:1.2;display:flex;align-items:flex-start;justify-content:center;padding-right:52px;}
+.detail-img-placeholder{width:100%;aspect-ratio:3/4;background:#0a0a0a;border:1px solid #181818;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.detail-img-placeholder span{font-size:.7rem;font-weight:900;letter-spacing:.2em;color:#1e1e1e;text-transform:uppercase;}
+.detail-info{flex:1;padding-top:2px;overflow-y:visible;}
+.detail-info h2{font-size:1.8rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:32px;}
+.meta-row{display:flex;flex-direction:column;gap:4px;border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:16px;}
+.meta-label{font-size:.52rem;font-weight:900;letter-spacing:.38em;color:#3a3a3a;text-transform:uppercase;}
+.meta-value{font-size:.78rem;font-weight:900;letter-spacing:.06em;color:#aaa;}
+.photos-btn{background:none;border:1px solid #2a2a2a;color:#555;font-family:'Arial Black',Arial,sans-serif;font-size:.65rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;padding:7px 16px;cursor:pointer;transition:all .2s;margin-top:4px;}
+.photos-btn:hover{border-color:#fff;color:#fff;}
+.r-label{font-size:.52rem;font-weight:900;letter-spacing:.38em;color:#3a3a3a;text-transform:uppercase;margin-bottom:6px;}
+.r-input{width:100%;background:#111;border:1px solid #333;color:#fff;font-family:'Arial Black',Arial,sans-serif;font-size:.75rem;padding:11px 14px;outline:none;color-scheme:dark;}
+.r-input:hover,.r-input:focus{border-color:#666;}
+.r-btn-white{background:#fff;border:none;color:#000;font-family:'Arial Black',Arial,sans-serif;font-size:.65rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;padding:12px 20px;cursor:pointer;transition:opacity .2s;}
+.r-btn-white:hover{opacity:.75;}
+.r-btn-outline{background:none;border:1px solid #444;color:#aaa;font-family:'Arial Black',Arial,sans-serif;font-size:.65rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;padding:11px 20px;cursor:pointer;transition:all .2s;width:100%;text-align:center;}
+.r-btn-outline:hover{border-color:#fff;color:#fff;}
+.time-row{display:flex;align-items:center;border-bottom:1px solid #111;transition:background .12s;}
+.time-row.booked{background:#0a0000;cursor:default;}
+.time-row.selected{background:#151515;border-left:2px solid #fff;}
+.time-row:not(.booked):not(.selected):hover{background:#0a150a;cursor:pointer;}
+.time-col-label{font-size:.6rem;font-weight:900;letter-spacing:.05em;color:#555;padding:10px 14px;width:150px;flex-shrink:0;}
+.time-col-status{flex:1;padding:10px 14px;font-size:.58rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;text-align:right;}
+#obstacle-detail{display:none;position:fixed;inset:0;background:var(--black);z-index:400;overflow-y:auto;}
+#obstacle-detail.open{display:block;}
+#obstacle-close{position:fixed;top:20px;right:24px;background:none;border:none;color:#fff;font-size:.65rem;font-weight:900;letter-spacing:.3em;text-transform:uppercase;cursor:pointer;z-index:410;}
+.obstacle-inner{padding:76px 48px 60px;display:flex;flex-direction:column;gap:48px;}
+.obstacle-top{display:flex;gap:48px;}
+.viewer-wrap{flex:1.2;width:100%;min-height:400px;aspect-ratio:1/1;background:#080808;border:1px solid #181818;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;position:relative;}
+.viewer-placeholder{font-size:.65rem;font-weight:900;letter-spacing:.2em;color:#1e1e1e;text-transform:uppercase;text-align:center;line-height:2;}
+.viewer-hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-size:.5rem;font-weight:900;letter-spacing:.2em;color:#222;text-transform:uppercase;white-space:nowrap;}
+.obstacle-info{flex:1;}
+.obstacle-info h2{font-size:1.8rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:28px;}
+.obstacle-meta{display:flex;flex-direction:column;gap:14px;}
+.obstacle-photos-title{font-size:.65rem;font-weight:900;letter-spacing:.3em;text-transform:uppercase;color:#3a3a3a;margin-bottom:16px;}
+.obstacle-photos-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;}
+.obstacle-photo-item{aspect-ratio:1/1;background:#080808;border:1px solid #0f0f0f;display:flex;align-items:center;justify-content:center;}
+.obstacle-photo-item span{font-size:.45rem;font-weight:900;letter-spacing:.15em;color:#555;text-transform:uppercase;}
+.about-wrap{max-width:500px;}
+.about-wrap h3{font-size:.9rem;font-weight:900;letter-spacing:.28em;text-transform:uppercase;margin:26px 0 8px;}
+.about-wrap p{font-size:.72rem;line-height:2.1;color:#555;letter-spacing:.04em;}
+@media(max-width:768px){
+  .grid-5{grid-template-columns:repeat(3,1fr);}
+  .detail-inner{flex-direction:column;}
+  .detail-img-wrap{padding-right:0;padding-bottom:32px;}
+  .yt-iframe{width:90%;}
+  #side-menu{width:260px;}
+  #main.shifted{transform:translateX(260px);}
+}
+</style>
+</head>
+<body>
+
+<button id="menu-btn"><span></span><span></span><span></span></button>
+<div id="logo"><img src="https://i.imgur.com/9kOXb0c_d.webp?maxwidth=760&fidelity=grand" alt="BLACKBOARD"></div>
+
+<div id="side-menu">
+  <div id="menu-label">MENU</div>
+  <nav>
+    <div class="nav-top" id="stuff-btn">STUFF</div>
+    <div class="nav-sub" id="nav-sub-stuff">
+      <a href="#" data-sec="videos">CLIPS</a>
+      <a href="#" data-sec="goods">GOODS</a>
+      <a href="#" data-sec="party">PARTY</a>
+      <a href="#" data-sec="photos">PHOTOS</a>
+      <a href="#" data-sec="obstacles">OBSTACLES</a>
+    </div>
+    <div class="nav-top" id="rental-btn">RENTAL</div>
+    <div class="nav-sub" id="nav-sub-rental">
+      <a href="#" data-sec="rental">SKATEBOARD RENTAL</a>
+      <a href="#" data-sec="rental-status">RENTAL STATUS</a>
+    </div>
+    <div class="nav-top" data-sec="about">ABOUT</div>
+  </nav>
+</div>
+<div id="overlay"></div>
+
+<div id="main">
+  <div id="home">
+    <div class="video-block"><iframe class="yt-iframe" src="https://www.youtube.com/embed/2UO45n53i0k" frameborder="0" allowfullscreen></iframe></div>
+    <div class="video-block"><iframe class="yt-iframe" src="https://www.youtube.com/embed/LWmxirp2JFo" frameborder="0" allowfullscreen></iframe></div>
+    <div class="video-block"><iframe class="yt-iframe" src="https://www.youtube.com/embed/luY4dMXD0Nw" frameborder="0" allowfullscreen></iframe></div>
+    <div class="video-block"><iframe class="yt-iframe" src="https://www.youtube.com/embed/dT1rZX5HYAc" frameborder="0" allowfullscreen></iframe></div>
+    <div class="video-block"><iframe class="yt-iframe" src="https://www.youtube.com/embed/XXLRwWdryaM" frameborder="0" allowfullscreen></iframe></div>
+    <div class="video-block"><iframe class="yt-iframe" src="https://www.youtube.com/embed/A09xh6BFtpY" frameborder="0" allowfullscreen></iframe></div>
+  </div>
+  <div id="sec-videos" class="section-page"><div class="section-title">CLIPS</div><div class="grid-5" id="grid-videos"></div></div>
+  <div id="sec-goods" class="section-page"><div class="section-title">GOODS</div><div class="grid-5" id="grid-goods"></div></div>
+  <div id="sec-party" class="section-page"><div class="section-title">PARTY</div><div class="grid-5" id="grid-party"></div></div>
+  <div id="sec-photos" class="section-page">
+    <div class="section-title">PHOTOS</div>
+    <div class="filter-bar" id="filter-bar"><button class="filter-btn active" data-tag="all">ALL</button></div>
+    <div class="grid-5" id="grid-photos"></div>
+  </div>
+  <div id="sec-obstacles" class="section-page"><div class="section-title">OBSTACLES</div><div class="grid-5" id="grid-obstacles"></div></div>
+  <div id="sec-rental" class="section-page"><div class="section-title">SKATEBOARD RENTAL</div><div class="grid-5" id="grid-rental"></div></div>
+  <div id="sec-rental-status" class="section-page">
+    <div class="section-title">RENTAL STATUS</div>
+    <div id="rental-status-wrap"></div>
+  </div>
+  <div id="sec-about" class="section-page">
+    <div class="section-title">ABOUT</div>
+    <div class="about-wrap">
+      <h3>BLACK BOARD</h3>
+      <p>우리는 스케이트보드를 타고, 기록하고, 공유합니다.<br>영상, 굿즈, 파티 — 모든 것이 보드 위에서 시작됩니다.</p>
+      <h3>CONTACT</h3>
+      <p><a href="https://www.instagram.com/blackboard_inha/" target="_blank" style="color:#555;text-decoration:none;border-bottom:1px solid #2a2a2a;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#555'">@blackboard_inha</a></p>
+    </div>
+  </div>
+</div>
+
+<div id="detail-view">
+  <button id="detail-close">✕ CLOSE</button>
+  <button id="detail-prev">←</button>
+  <button id="detail-next">→</button>
+  <div class="detail-inner">
+    <div class="detail-img-wrap"><div class="detail-img-placeholder" id="detail-img-box"><span>—</span></div></div>
+    <div class="detail-info">
+      <h2 id="detail-title">—</h2>
+      <div id="detail-meta"></div>
+    </div>
+  </div>
+</div>
+
+<div id="obstacle-detail">
+  <button id="obstacle-close">✕ CLOSE</button>
+  <div class="obstacle-inner">
+    <div class="obstacle-top">
+      <div class="viewer-wrap">
+        <div class="viewer-placeholder"><span>3D MODEL</span><br><span id="viewer-name">—</span></div>
+        <div class="viewer-hint">← COMING SOON →</div>
+      </div>
+      <div class="obstacle-info">
+        <h2 id="obstacle-title">—</h2>
+        <div class="obstacle-meta" id="obstacle-meta"></div>
+      </div>
+    </div>
+    <div><div class="obstacle-photos-title">PROCESS PHOTOS</div><div class="obstacle-photos-grid" id="obstacle-photos-grid"></div></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// GLTFLoader 직접 정의
+THREE.GLTFLoader = (function() {
+  // unpkg에서 동적으로 로드
+  const script = document.createElement('script');
+  script.src = 'https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js';
+  document.head.appendChild(script);
+  return THREE.GLTFLoader;
+})();
+</script>
+<script>
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxBZqOKVppsKT6Eh8UWo2PPjQWMtCrvm-Ub8w3jrNpgD7r6aknys67hcdkWYepKdBFg/exec';
+
+function sheetDateToYMD(v){
+  const s=String(v);
+  const m=s.match(/\w+\s+(\w+)\s+(\d+)\s+(\d{4})/);
+  if(m){const mo={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};return m[3]+'-'+(mo[m[1]]||'01')+'-'+m[2].padStart(2,'0');}
+  return s.split('T')[0]||s;
+}
+function sheetTimeToHour(v){const s=String(v);const m=s.match(/(\d{1,2}):(\d{2}):\d{2}\s+GMT/);if(m)return parseInt(m[1]);return parseInt(s);}
+function sheetTimeToStr(v){const s=String(v);const m=s.match(/(\d{1,2}):(\d{2}):\d{2}\s+GMT/);if(m)return m[1].padStart(2,'0')+':'+m[2];return s.substring(0,5)||'—';}
+
+// ── DATA ──
+const partyData = [
+  {id:1,title:'',planner:'주형인 X 유강승준',designer:'유강승준',date:'24.04.04',location:'비룡탑',contents:'햄버거 판매, 디제잉 및 스케이팅',video:'https://youtu.be/A09xh6BFtpY?si=a1g03gGEij5GE-vq',photos_tag:'party_1',img:'https://i.imgur.com/N1WIggj.jpeg'},
+  {id:2,title:'',planner:'',designer:'',date:'',location:'',contents:'',video:'',photos_tag:'party_2',img:'https://i.imgur.com/fTudWkX.png'},
+  {id:3,title:'',planner:'',designer:'',date:'',location:'',contents:'',video:'',photos_tag:'party_3',img:''},
+  {id:4,title:'',planner:'',designer:'',date:'',location:'',contents:'',video:'',photos_tag:'party_4',img:'https://i.imgur.com/k7studU.jpeg'},
+  {id:5,title:'',planner:'',designer:'',date:'',location:'',contents:'',video:'',photos_tag:'party_5',img:''},
+  {id:6,title:'',planner:'',designer:'',date:'',location:'',contents:'',video:'',photos_tag:'party_6',img:''},
+  {id:7,title:'',planner:'',designer:'',date:'',location:'',contents:'',video:'',photos_tag:'party_7',img:''},
+  {id:8,title:'',planner:'',designer:'',date:'',location:'',contents:'',video:'',photos_tag:'party_8',img:''},
+  {id:9,title:'',planner:'',designer:'',date:'',location:'',contents:'',video:'',photos_tag:'party_9',img:''},
+  {id:10,title:'',planner:'',designer:'',date:'',location:'',contents:'',video:'',photos_tag:'party_10',img:''},
+];
+const goodsData = Array.from({length:10},(_,i)=>({id:i+1,title:'',tag:`goods_${i+1}`,img:''}));
+const videosData = [
+  {id:1,title:'조용준 네장넘기',date:'2024',skater:'조용준',filmer:'홍준영',editDate:'24.04.04',caption:'OLLIE OVER 4 DECKS',tag:'party1',src:'https://drive.google.com/file/d/1scUxr2uRSt41h-3GOU13pphr1D2EfW7x/preview',img:'https://i.imgur.com/73674CJ.jpeg'},
+  {id:2,title:'조용준 네장넘기2',date:'2024',skater:'조용준',filmer:'박민건',editDate:'24.04.04',caption:'OLLIE OVER 4 DECKS',tag:'party1',src:'https://drive.google.com/file/d/1CF_F9haIXtolbszgWvAS4c1BTyGti7Vx/preview',img:'https://i.imgur.com/2ISIzLE.jpeg'},
+  {id:3,title:'',date:'',skater:'',filmer:'',editDate:'',tag:'',src:'',img:''},
+  {id:4,title:'',date:'',skater:'',filmer:'',editDate:'',tag:'',src:'',img:''},
+  {id:5,title:'',date:'',skater:'',filmer:'',editDate:'',tag:'',src:'',img:''},
+  {id:6,title:'',date:'',skater:'',filmer:'',editDate:'',tag:'',src:'',img:''},
+];
+const rentalData = Array.from({length:16},(_,i)=>({id:i+1,title:`RENTAL BOARD ${i+1}`}));
+const photosData = [];
+const obstaclesData = [
+  {id:1,name:'LEDGE',material:'',size:'',weight:'',builder:'',year:'',model:'https://raw.githubusercontent.com/parkmg0904-bit/BLACKBOARDHAWAII/main/low_angle_handle.glb',photos:[]},
+  {id:2,name:'MANUAL PAD',material:'',size:'',weight:'',builder:'',year:'',model:'https://raw.githubusercontent.com/parkmg0904-bit/BLACKBOARDHAWAII/main/mgbaker3.glb',photos:[]},
+];
+
+let currentList=[],currentIndex=0,currentType='';
+let currentRentalId=null,bookedSlots=[],selStart=null,selEnd=null;
+
+// ── GRID ──
+function buildGrid(cId,items,type){
+  const c=document.getElementById(cId); c.innerHTML='';
+  const list=[...items].reverse();
+  list.forEach(item=>{
+    const el=document.createElement('div'); el.className='grid-item';
+    if(item.img){
+      el.innerHTML=`<img src="${item.img}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;"><div style="position:relative;z-index:1;padding:8px;width:100%;text-align:center;"><div class="grid-item-num" style="text-shadow:0 0 8px #000;">${String(item.id).padStart(2,'0')}</div></div>`;
+    } else {
+      el.innerHTML=`<div class="grid-item-num">${String(item.id).padStart(2,'0')}</div><div class="grid-item-label">${item.title||item.name||''}</div>`;
+    }
+    el.addEventListener('click',()=>openDetail(item,type,list));
+    c.appendChild(el);
+  });
+}
+function buildObstaclesGrid(){
+  const c=document.getElementById('grid-obstacles'); c.innerHTML='';
+  const list=[...obstaclesData].reverse();
+  list.forEach(item=>{
+    const el=document.createElement('div'); el.className='grid-item';
+    el.innerHTML=`<div class="grid-item-num" style="color:#555">${String(item.id).padStart(2,'0')}</div><div class="grid-item-label" style="color:#444">${item.name}</div>`;
+    el.addEventListener('click',()=>openObstacle(item));
+    c.appendChild(el);
+  });
+}
+function buildPhotosGrid(filter){
+  filter=filter||'all';
+  const c=document.getElementById('grid-photos'); c.innerHTML='';
+  const list=filter==='all'?photosData:photosData.filter(p=>p.tag===filter);
+  if(!list.length){c.innerHTML='<div style="color:#333;font-size:.65rem;letter-spacing:.2em;padding:20px 0;">— NO PHOTOS YET —</div>';return;}
+  list.forEach(item=>{
+    const el=document.createElement('div'); el.className='grid-item';
+    el.innerHTML=`<div class="grid-item-num">${String(item.id).padStart(2,'0')}</div><div class="grid-item-label">${item.title||''}</div>`;
+    el.addEventListener('click',()=>openDetail(item,'photo',list));
+    c.appendChild(el);
+  });
+}
+function buildFilterBar(){
+  const bar=document.getElementById('filter-bar');
+  const tags=['all',...new Set(photosData.map(p=>p.tag))];
+  bar.innerHTML=tags.map(t=>`<button class="filter-btn${t==='all'?' active':''}" data-tag="${t}">${t.toUpperCase()}</button>`).join('');
+  bar.querySelectorAll('.filter-btn').forEach(btn=>{btn.addEventListener('click',()=>{bar.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');buildPhotosGrid(btn.dataset.tag);});});
+}
+
+buildGrid('grid-party',partyData,'party');
+buildGrid('grid-goods',goodsData,'goods');
+buildGrid('grid-videos',videosData,'videos');
+buildGrid('grid-rental',rentalData,'rental');
+buildFilterBar(); buildPhotosGrid(); buildObstaclesGrid();
+
+// ── DETAIL ──
+function openDetail(item,type,list){
+  currentList=list; currentIndex=list.indexOf(item); currentType=type;
+  if(type==='rental') currentRentalId=item.id;
+  renderDetail(item,type);
+  document.getElementById('detail-view').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function navigateDetail(dir){
+  currentIndex+=dir;
+  const item=currentList[currentIndex];
+  if(currentType==='rental') currentRentalId=item.id;
+  renderDetail(item,currentType);
+}
+function openDetailById(id){
+  const list=[...videosData].reverse();
+  const item=list.find(v=>v.id===id);
+  if(!item) return;
+  closeDetail();
+  showSection('videos');
+  setTimeout(()=>openDetail(item,'videos',list),100);
+}
+function renderDetail(item,type){
+  document.getElementById('detail-title').textContent=item.title||item.name||'—';
+  document.getElementById('detail-prev').classList.toggle('hidden',currentIndex<=0);
+  document.getElementById('detail-next').classList.toggle('hidden',currentIndex>=currentList.length-1);
+  const imgBox=document.getElementById('detail-img-box');
+  const meta=document.getElementById('detail-meta');
+
+  if(type==='videos'&&item.src){
+    imgBox.style.aspectRatio='16/9';
+    imgBox.innerHTML=`<iframe src="${item.src}" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>`;
+  } else if(item.img){
+    imgBox.style.aspectRatio='3/4';
+    imgBox.innerHTML=`<img src="${item.img}" style="width:100%;height:100%;object-fit:cover;">`;
+  } else {
+    imgBox.style.aspectRatio='3/4';
+    imgBox.innerHTML=`<span>${item.title||item.name||'—'}</span>`;
+  }
+
+  if(type==='party'){
+    const relatedClips=videosData.filter(v=>v.tag&&v.tag==='party'+item.id);
+    meta.innerHTML=`
+      <div class="meta-row"><span class="meta-label">PLANNER</span><span class="meta-value">${item.planner||'—'}</span></div>
+      <div class="meta-row"><span class="meta-label">POSTER DESIGNER</span><span class="meta-value">${item.designer||'—'}</span></div>
+      <div class="meta-row"><span class="meta-label">DATE</span><span class="meta-value">${item.date||'—'}</span></div>
+      <div class="meta-row"><span class="meta-label">LOCATION</span><span class="meta-value">${item.location||'—'}</span></div>
+      <div class="meta-row"><span class="meta-label">CONTENTS</span><span class="meta-value">${item.contents||'—'}</span></div>
+      <div class="meta-row"><span class="meta-label">RELATED VIDEO</span><span class="meta-value">${item.video?`<a style="color:#aaa;text-decoration:none;border-bottom:1px solid #2a2a2a;" href="${item.video}" target="_blank">${item.video}</a>`:'—'}</span></div>
+      <div class="meta-row"><span class="meta-label">RELATED CLIPS</span><span class="meta-value">${relatedClips.length?relatedClips.map(c=>`<a style="display:inline-block;margin-right:10px;color:#aaa;text-decoration:none;border-bottom:1px solid #2a2a2a;" href="#" data-clip-id="${c.id}">${c.title||'CLIP '+c.id}</a>`).join(''):'—'}</span></div>
+      <div class="meta-row"><span class="meta-label">PHOTOS</span><span class="meta-value"><button class="photos-btn" id="goto-photos-btn">VIEW PHOTOS →</button></span></div>`;
+    document.getElementById('goto-photos-btn').addEventListener('click',()=>goToPhotos(item.photos_tag));
+    meta.querySelectorAll('[data-clip-id]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();openDetailById(parseInt(a.dataset.clipId));}));
+  } else if(type==='goods'){
+    meta.innerHTML=`
+      <div class="meta-row"><span class="meta-label">ITEM</span><span class="meta-value">${item.title||'—'}</span></div>
+      <div class="meta-row"><span class="meta-label">BRAND</span><span class="meta-value">BLACK BOARD</span></div>
+      <div class="meta-row"><span class="meta-label">PHOTOS</span><span class="meta-value"><button class="photos-btn" id="goto-photos-btn">VIEW PHOTOS →</button></span></div>`;
+    document.getElementById('goto-photos-btn').addEventListener('click',()=>goToPhotos(item.tag));
+  } else if(type==='videos'){
+    meta.innerHTML=`
+      <div class="meta-row"><span class="meta-label">SKATER</span><span class="meta-value">${item.skater||'—'}</span></div>
+      <div class="meta-row"><span class="meta-label">FILMER</span><span class="meta-value">${item.filmer||'—'}</span></div>
+      <div class="meta-row"><span class="meta-label">DATE</span><span class="meta-value">${item.editDate||item.date||'—'}</span></div>
+      ${item.caption?`<div class="meta-row"><span class="meta-label">CAPTION</span><span class="meta-value">${item.caption}</span></div>`:''}`;
+  } else if(type==='rental'){
+    const today=new Date(); today.setHours(0,0,0,0);
+    const maxDate=new Date(today); maxDate.setDate(today.getDate()+7);
+    const fmt=d=>d.toISOString().split('T')[0];
+    meta.innerHTML=`
+      <div class="meta-row"><span class="meta-label">BOARD NO.</span><span class="meta-value">${item.title||'—'}</span></div>
+      <div class="meta-row"><span class="meta-label">BOARD INFO</span><span class="meta-value">—</span></div>
+      <div class="meta-row"><span class="meta-label">HISTORY</span><span class="meta-value">—</span></div>
+      <div style="border-top:1px solid var(--border);padding-top:24px;display:flex;flex-direction:column;gap:16px;">
+        <div style="font-size:.6rem;font-weight:900;letter-spacing:.35em;color:#444;text-transform:uppercase;">NEW RENTAL</div>
+        <div><div class="r-label">BORROWER</div><input id="r-name" class="r-input" type="text" placeholder="이름 입력"></div>
+        <div><div class="r-label">STUDENT ID</div><input id="r-sid" class="r-input" type="text" placeholder="학번 입력"></div>
+        <div>
+          <div class="r-label">DATE</div>
+          <input id="r-date" class="r-input" type="date" min="${fmt(today)}" max="${fmt(maxDate)}">
+          <div id="r-date-msg" style="font-size:.58rem;font-weight:900;letter-spacing:.1em;color:#883333;margin-top:6px;min-height:14px;"></div>
+        </div>
+        <button id="r-time-btn" class="r-btn-outline">▼ 시간 선택</button>
+        <div id="r-time-wrap" style="display:none;flex-direction:column;gap:8px;">
+          <div style="font-size:.55rem;font-weight:900;letter-spacing:.1em;color:#555;">시작 시간 클릭 → 끝 시간 클릭으로 범위 선택</div>
+          <div id="r-time-table" style="border:1px solid #1a1a1a;"></div>
+          <div id="r-time-selected" style="font-size:.65rem;font-weight:900;letter-spacing:.08em;color:#666;min-height:20px;padding:6px 0;"></div>
+        </div>
+        <div style="border:1px solid #1a1a1a;padding:16px;display:flex;gap:12px;align-items:flex-start;">
+          <input id="r-oath" type="checkbox" style="margin-top:3px;cursor:pointer;accent-color:#fff;">
+          <label for="r-oath" style="font-size:.62rem;font-weight:900;letter-spacing:.04em;color:#555;line-height:1.8;cursor:pointer;">
+            보드 분실 또는 파손 시 본인이 책임질 것을 서약합니다.<br>
+            <span style="color:#333;">I agree to take full responsibility for any loss or damage.</span>
+          </label>
+        </div>
+        <button id="r-submit-btn" class="r-btn-white" style="width:100%;padding:14px;font-size:.75rem;">CONFIRM RENTAL</button>
+        <div id="r-msg" style="font-size:.65rem;font-weight:900;letter-spacing:.1em;color:#555;text-align:center;min-height:20px;"></div>
+      </div>`;
+    document.getElementById('r-date').addEventListener('change',function(){
+      const sel=new Date(this.value); sel.setHours(0,0,0,0);
+      const diff=Math.round((sel-today)/(1000*60*60*24));
+      const dm=document.getElementById('r-date-msg');
+      if(diff<0){dm.textContent='오늘 이전 날짜는 선택할 수 없어요.';this.value='';return;}
+      if(diff>7){dm.textContent='최대 일주일 이내 날짜만 선택 가능해요.';this.value='';return;}
+      dm.textContent='';
+    });
+    document.getElementById('r-time-btn').addEventListener('click',function(){
+      const date=document.getElementById('r-date').value;
+      const dm=document.getElementById('r-date-msg');
+      if(!date){dm.textContent='날짜를 먼저 선택해주세요.';return;}
+      dm.textContent='';
+      const wrap=document.getElementById('r-time-wrap');
+      const isOpen=wrap.style.display==='flex';
+      wrap.style.display=isOpen?'none':'flex';
+      this.textContent=isOpen?'▼ 시간 선택':'▲ 시간 선택 닫기';
+      if(!isOpen) fetchAndRenderTimeTable(date);
+    });
+    document.getElementById('r-submit-btn').addEventListener('click',submitRental);
+  } else if(type==='photo'){
+    meta.innerHTML=`<div class="meta-row"><span class="meta-label">TAG</span><span class="meta-value">${item.tag||'—'}</span></div>`;
+  } else {
+    meta.innerHTML=`
+      <div class="meta-row"><span class="meta-label">TITLE</span><span class="meta-value">${item.title||'—'}</span></div>
+      <div class="meta-row"><span class="meta-label">YEAR</span><span class="meta-value">${item.date||'—'}</span></div>`;
+  }
+}
+function closeDetail(){document.getElementById('detail-view').classList.remove('open');document.body.style.overflow='';}
+function goToPhotos(tag){closeDetail();showSection('photos');setTimeout(()=>{buildPhotosGrid(tag);document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.tag===tag));},100);}
+
+// ── RENTAL TIME TABLE ──
+async function fetchAndRenderTimeTable(date){
+  const table=document.getElementById('r-time-table');
+  table.innerHTML='<div style="font-size:.6rem;font-weight:900;letter-spacing:.2em;color:#444;padding:14px;">불러오는 중...</div>';
+  bookedSlots=[]; selStart=null; selEnd=null; updateSelDisplay();
+  try{
+    const res=await fetch(SHEET_URL+'?t='+Date.now());
+    const all=await res.json();
+    all.forEach(r=>{
+      const rDate=sheetDateToYMD(r.date);
+      if(String(r.board_no)===String(currentRentalId)&&rDate===date){
+        const s=sheetTimeToHour(r.start_time),e=sheetTimeToHour(r.end_time);
+        for(let i=s;i<e;i++) bookedSlots.push({hour:i,borrower:r.borrower});
+      }
+    });
+  }catch(e){bookedSlots=[];}
+  renderTimeTable();
+}
+function renderTimeTable(){
+  const table=document.getElementById('r-time-table'); table.innerHTML='';
+  for(let i=0;i<24;i++){
+    const booked=bookedSlots.find(s=>s.hour===i);
+    const isSel=selStart!==null&&selEnd!==null&&i>=selStart&&i<selEnd;
+    const row=document.createElement('div');
+    row.className='time-row'+(booked?' booked':isSel?' selected':'');
+    const lbl=document.createElement('div'); lbl.className='time-col-label';
+    lbl.textContent=`${String(i).padStart(2,'0')}:00 ~ ${String(i+1).padStart(2,'0')}:00`;
+    const st=document.createElement('div'); st.className='time-col-status';
+    if(booked){st.textContent=`BORROWER ${booked.borrower}`;st.style.color='#883333';}
+    else if(isSel){st.textContent=i===selStart?'← START':i===selEnd-1?'END →':'';st.style.color='#fff';}
+    else{st.textContent='AVAILABLE';st.style.color='#2a6a2a';row.addEventListener('click',()=>handleTimeClick(i));}
+    row.appendChild(lbl); row.appendChild(st); table.appendChild(row);
+  }
+}
+function handleTimeClick(h){
+  if(selStart===null){selStart=h;selEnd=null;}
+  else if(selEnd===null){
+    if(h===selStart){selStart=null;}
+    else if(h<selStart){selStart=h;}
+    else{let ok=true;for(let i=selStart;i<h;i++)if(bookedSlots.find(s=>s.hour===i)){ok=false;selStart=h;break;}if(ok)selEnd=h+1;}
+  }else{selStart=h;selEnd=null;}
+  renderTimeTable(); updateSelDisplay();
+}
+function updateSelDisplay(){
+  const el=document.getElementById('r-time-selected'); if(!el) return;
+  if(selStart!==null&&selEnd!==null){el.textContent=`✓  ${String(selStart).padStart(2,'0')}:00  ~  ${String(selEnd).padStart(2,'00')}:00`;el.style.color='#fff';}
+  else if(selStart!==null){el.textContent=`시작: ${String(selStart).padStart(2,'0')}:00  —  끝 시간을 클릭해주세요`;el.style.color='#666';}
+  else{el.textContent='시작 시간을 클릭해주세요';el.style.color='#444';}
+}
+async function submitRental(){
+  const name=document.getElementById('r-name').value.trim();
+  const sid=document.getElementById('r-sid').value.trim();
+  const date=document.getElementById('r-date').value;
+  const oath=document.getElementById('r-oath').checked;
+  const msg=document.getElementById('r-msg');
+  if(!name){msg.textContent='이름을 입력해주세요.';return;}
+  if(!sid){msg.textContent='학번을 입력해주세요.';return;}
+  if(!date){msg.textContent='날짜를 선택해주세요.';return;}
+  if(selStart===null||selEnd===null){msg.textContent='시간을 선택해주세요.';return;}
+  if(!oath){msg.textContent='서약에 동의해주세요.';return;}
+  msg.style.color='#555'; msg.textContent='처리 중...';
+  try{
+    await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({board_no:currentRentalId,borrower:name,student_id:sid,date,start_time:String(selStart).padStart(2,'0')+':00',end_time:String(selEnd).padStart(2,'00')+':00',oath:'동의'})});
+    msg.style.color='#fff'; msg.textContent='대여 신청 완료!';
+    selStart=null; selEnd=null;
+  }catch(e){msg.textContent='오류가 발생했어요. 다시 시도해줘요.';}
+}
+
+// ── RENTAL STATUS ──
+async function loadRentalStatus(){
+  const wrap=document.getElementById('rental-status-wrap');
+  wrap.innerHTML='<div style="font-size:.65rem;font-weight:900;letter-spacing:.2em;color:#444;padding:20px 0;">불러오는 중...</div>';
+  const days=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  let all=[];
+  try{const res=await fetch(SHEET_URL+'?t='+Date.now());all=await res.json();}
+  catch(e){wrap.innerHTML='<div style="font-size:.65rem;font-weight:900;letter-spacing:.2em;color:#883333;padding:20px 0;">데이터를 불러올 수 없어요.</div>';return;}
+  if(!all.length){wrap.innerHTML='<div style="font-size:.65rem;font-weight:900;letter-spacing:.2em;color:#333;padding:20px 0;">— NO RECORDS —</div>';return;}
+  const normalized=all.map(r=>({...r,dateNorm:sheetDateToYMD(r.date),startFmt:sheetTimeToStr(r.start_time),endFmt:sheetTimeToStr(r.end_time)})).sort((a,b)=>a.dateNorm.localeCompare(b.dateNorm)||a.startFmt.localeCompare(b.startFmt));
+  const byDate={};
+  normalized.forEach(r=>{if(!byDate[r.dateNorm])byDate[r.dateNorm]=[];byDate[r.dateNorm].push(r);});
+  const sortedEntries=Object.entries(byDate).sort((a,b)=>a[0].localeCompare(b[0]));
+  wrap.innerHTML=sortedEntries.map(([date,records])=>{
+    let label=date;
+    const p=date.split('-');
+    if(p.length===3){const dt=new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));label=p[1]+' '+p[2]+' '+(['SUN','MON','TUE','WED','THU','FRI','SAT'][dt.getDay()]||'');}
+    return `<div style="margin-bottom:36px;">
+      <div style="font-size:.75rem;font-weight:900;letter-spacing:.3em;color:#fff;text-transform:uppercase;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:2px;">${label}</div>
+      ${records.map(r=>{const sh=parseInt(r.startFmt),eh=parseInt(r.endFmt);const dur=(!isNaN(sh)&&!isNaN(eh)&&eh>sh)?` (${eh-sh}H)`:'';
+        return `<div style="display:flex;align-items:center;border-bottom:1px solid #0f0f0f;padding:12px 0;gap:20px;">
+          <div style="font-size:.6rem;font-weight:900;letter-spacing:.1em;color:#555;width:90px;flex-shrink:0;">BOARD ${String(r.board_no).padStart(2,'0')}</div>
+          <div style="font-size:.62rem;font-weight:900;letter-spacing:.06em;color:#777;width:80px;flex-shrink:0;">${r.student_id&&String(r.student_id)!=='0'?r.student_id:'—'}</div>
+          <div style="font-size:.72rem;font-weight:900;letter-spacing:.06em;color:#ccc;width:80px;flex-shrink:0;">${r.borrower||'—'}</div>
+          <div style="font-size:.6rem;font-weight:900;letter-spacing:.08em;color:#666;">${r.startFmt} ~ ${r.endFmt}${dur}</div>
+        </div>`;}).join('')}
+    </div>`;
+  }).join('');
+}
+
+function init3DViewer(canvas,modelUrl,W,H){
+  W=W||500; H=H||500;
+  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(W,H);
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(45,W/H,0.01,1000);
+  camera.position.set(0,1,4);
+  scene.add(new THREE.AmbientLight(0xffffff,2));
+  const dir=new THREE.DirectionalLight(0xffffff,2);
+  dir.position.set(5,10,5); scene.add(dir);
+  let model=null;
+  const loader=new THREE.GLTFLoader();
+  loader.load(modelUrl,gltf=>{
+    model=gltf.scene;
+    const box=new THREE.Box3().setFromObject(model);
+    const center=box.getCenter(new THREE.Vector3());
+    const size=box.getSize(new THREE.Vector3());
+    model.position.sub(center);
+    model.scale.setScalar(2/Math.max(size.x,size.y,size.z));
+    scene.add(model);
+  },undefined,err=>console.error('GLB 오류:',err));
+  let isDrag=false,prevX=0,prevY=0,rotX=0,rotY=0;
+  canvas.addEventListener('mousedown',e=>{isDrag=true;prevX=e.clientX;prevY=e.clientY;canvas.style.cursor='grabbing';});
+  window.addEventListener('mousemove',e=>{if(!isDrag)return;rotY+=(e.clientX-prevX)*0.01;rotX+=(e.clientY-prevY)*0.01;prevX=e.clientX;prevY=e.clientY;});
+  window.addEventListener('mouseup',()=>{isDrag=false;canvas.style.cursor='grab';});
+  canvas.addEventListener('touchstart',e=>{isDrag=true;prevX=e.touches[0].clientX;prevY=e.touches[0].clientY;},{passive:true});
+  window.addEventListener('touchmove',e=>{if(!isDrag)return;rotY+=(e.touches[0].clientX-prevX)*0.01;rotX+=(e.touches[0].clientY-prevY)*0.01;prevX=e.touches[0].clientX;prevY=e.touches[0].clientY;},{passive:true});
+  window.addEventListener('touchend',()=>isDrag=false);
+  (function animate(){
+    requestAnimationFrame(animate);
+    if(!document.getElementById('obstacle-detail').classList.contains('open'))return;
+    if(model){model.rotation.y=rotY;model.rotation.x=rotX;}
+    renderer.render(scene,camera);
+  })();
+}
+
+// ── OBSTACLE ──
+function openObstacle(item){
+  document.getElementById('obstacle-title').textContent=item.name;
+  document.getElementById('viewer-name').textContent=item.name;
+  document.getElementById('obstacle-meta').innerHTML=`
+    <div class="meta-row"><span class="meta-label">MATERIAL</span><span class="meta-value">${item.material||'—'}</span></div>
+    <div class="meta-row"><span class="meta-label">SIZE</span><span class="meta-value">${item.size||'—'}</span></div>
+    <div class="meta-row"><span class="meta-label">WEIGHT</span><span class="meta-value">${item.weight||'—'}</span></div>
+    <div class="meta-row"><span class="meta-label">BUILDER</span><span class="meta-value">${item.builder||'—'}</span></div>
+    <div class="meta-row"><span class="meta-label">YEAR</span><span class="meta-value">${item.year||'—'}</span></div>`;
+  const pg=document.getElementById('obstacle-photos-grid');
+  pg.innerHTML=item.photos&&item.photos.length>0?item.photos.map(p=>`<div class="obstacle-photo-item">${p.img?`<img src="${p.img}" style="width:100%;height:100%;object-fit:cover;">`:`<span>${p.caption||'—'}</span>`}</div>`).join(''):Array.from({length:5},()=>`<div class="obstacle-photo-item"><span>—</span></div>`).join('');
+  document.getElementById('obstacle-detail').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeObstacle(){document.getElementById('obstacle-detail').classList.remove('open');document.body.style.overflow='';}
+
+// ── NAV ──
+function showHome(){document.getElementById('home').style.display='block';document.querySelectorAll('.section-page').forEach(s=>s.classList.remove('active'));closeMenu();}
+function showSection(sec){
+  document.getElementById('home').style.display='none';
+  document.querySelectorAll('.section-page').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+sec).classList.add('active');
+  if(sec==='rental-status') loadRentalStatus();
+  closeMenu(); window.scrollTo(0,0);
+}
+function closeMenu(){
+  document.getElementById('menu-btn').classList.remove('open');
+  document.getElementById('side-menu').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('main').classList.remove('shifted');
+  document.getElementById('logo').classList.remove('dim');
+}
+function toggleMenu(){
+  const isOpen=document.getElementById('side-menu').classList.toggle('open');
+  document.getElementById('menu-btn').classList.toggle('open',isOpen);
+  document.getElementById('overlay').classList.toggle('show',isOpen);
+  document.getElementById('main').classList.toggle('shifted',isOpen);
+  document.getElementById('logo').classList.toggle('dim',isOpen);
+}
+
+document.getElementById('menu-btn').addEventListener('click',toggleMenu);
+document.getElementById('logo').addEventListener('click',showHome);
+document.getElementById('overlay').addEventListener('click',closeMenu);
+document.getElementById('detail-close').addEventListener('click',closeDetail);
+document.getElementById('detail-prev').addEventListener('click',()=>navigateDetail(-1));
+document.getElementById('detail-next').addEventListener('click',()=>navigateDetail(1));
+document.getElementById('obstacle-close').addEventListener('click',closeObstacle);
+document.getElementById('stuff-btn').addEventListener('click',()=>document.getElementById('nav-sub-stuff').classList.toggle('open'));
+document.getElementById('rental-btn').addEventListener('click',()=>document.getElementById('nav-sub-rental').classList.toggle('open'));
+document.querySelectorAll('[data-sec]').forEach(el=>el.addEventListener('click',e=>{e.preventDefault();showSection(el.dataset.sec);}));
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeDetail();closeObstacle();closeMenu();}
+  if(document.getElementById('detail-view').classList.contains('open')){
+    if(e.key==='ArrowLeft'&&currentIndex>0)navigateDetail(-1);
+    if(e.key==='ArrowRight'&&currentIndex<currentList.length-1)navigateDetail(1);
+  }
+});
+</script>
+</body>
+</html>
