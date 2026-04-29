@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -39,7 +40,7 @@ body > *:not(style){position:relative;}
 #main.shifted{transform:translateX(33vw);}
 #home{display:block;}
 #home .video-block:first-child{padding-top:90px;}
-.video-block{width:100%;height:80vh;display:flex;align-items:center;justify-content:center;}
+.video-block{width:100%;height:80vh;display:flex;align-items:center;justify-content:center;margin-bottom:32px;}
 .yt-iframe{width:62%;aspect-ratio:16/9;height:auto;border:none;display:block;}
 .section-page{display:none;padding:90px 40px 80px;}
 .section-page.active{display:block;}
@@ -116,12 +117,12 @@ body > *:not(style){position:relative;}
 .pin-dot.filled{background:#fff;border-color:#fff;}
 #pin-error{font-size:.55rem;font-weight:900;letter-spacing:.2em;color:#883333;text-transform:uppercase;min-height:16px;text-align:center;}
 #pin-numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;width:100%;}
-.pin-key{background:#0a0a0a;border:1px solid #111;color:#fff;font-family:'Courier Prime','Arial Black',Arial,sans-serif;font-size:1rem;font-weight:900;padding:18px 0;cursor:pointer;text-align:center;transition:background .12s;user-select:none;}
+.pin-key{background:#0a0a0a;border:1px solid #111;color:#fff;font-family:‘Courier Prime’,‘Arial Black’,Arial,sans-serif;font-size:1rem;font-weight:900;padding:18px 0;cursor:pointer;text-align:center;transition:background .12s;user-select:none;}
 .pin-key:hover{background:#181818;}
 .pin-key:active{background:#222;}
 .pin-key.del{color:#444;}
 .pin-key.empty{background:none;border-color:transparent;cursor:default;}
-#pin-guest-btn{background:none;border:1px solid #1a1a1a;color:#2a2a2a;font-family:'Courier Prime','Arial Black',Arial,sans-serif;font-size:.55rem;font-weight:900;letter-spacing:.3em;text-transform:uppercase;padding:10px 24px;cursor:pointer;transition:all .2s;width:100%;}
+#pin-guest-btn{background:none;border:1px solid #1a1a1a;color:#2a2a2a;font-family:‘Courier Prime’,‘Arial Black’,Arial,sans-serif;font-size:.55rem;font-weight:900;letter-spacing:.3em;text-transform:uppercase;padding:10px 24px;cursor:pointer;transition:all .2s;width:100%;}
 #pin-guest-btn:hover{border-color:#444;color:#444;}
 #role-badge{margin-top:auto;padding:18px 36px 24px;text-align:right;border-top:1px solid #111;position:relative;cursor:pointer;}
 #role-badge:hover #role-badge-label{color:#444;}
@@ -133,53 +134,53 @@ body > *:not(style){position:relative;}
 #role-change-popup{display:none;position:absolute;bottom:calc(100% + 0px);right:0;left:0;background:#0d0d0d;border:1px solid #2a2a2a;border-bottom:none;padding:16px 20px;flex-direction:column;gap:10px;}
 #role-change-popup.open{display:flex;}
 #role-change-popup-title{font-size:.48rem;font-weight:900;letter-spacing:.3em;color:#333;text-transform:uppercase;}
-#role-change-input{background:#000;border:1px solid #222;color:#fff;font-family:'Courier Prime','Arial Black',Arial,sans-serif;font-size:.75rem;font-weight:900;padding:8px 12px;outline:none;width:100%;letter-spacing:.1em;text-align:center;}
+#role-change-input{background:#000;border:1px solid #222;color:#fff;font-family:‘Courier Prime’,‘Arial Black’,Arial,sans-serif;font-size:.75rem;font-weight:900;padding:8px 12px;outline:none;width:100%;letter-spacing:.1em;text-align:center;}
 #role-change-input:focus{border-color:#444;}
 #role-change-msg{font-size:.48rem;font-weight:900;letter-spacing:.2em;color:#883333;text-transform:uppercase;min-height:12px;text-align:center;}
 #role-change-btns{display:flex;gap:6px;}
-.role-change-btn{flex:1;background:none;border:1px solid #222;color:#444;font-family:'Courier Prime','Arial Black',Arial,sans-serif;font-size:.5rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;padding:7px 0;cursor:pointer;transition:all .15s;}
+.role-change-btn{flex:1;background:none;border:1px solid #222;color:#444;font-family:‘Courier Prime’,‘Arial Black’,Arial,sans-serif;font-size:.5rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;padding:7px 0;cursor:pointer;transition:all .15s;}
 .role-change-btn:hover{border-color:#fff;color:#fff;}
 #role-guest-btn{border-color:#1a1a1a;color:#2a2a2a;}
 @media(max-width:768px){
-  .grid-5{grid-template-columns:repeat(3,1fr);}
-  .detail-inner{flex-direction:column;}
-  .detail-img-wrap{padding-right:0;padding-bottom:32px;}
-  #side-menu{width:260px;}
-  #main.shifted{transform:translateX(260px);}
+.grid-5{grid-template-columns:repeat(3,1fr);}
+.detail-inner{flex-direction:column;}
+.detail-img-wrap{padding-right:0;padding-bottom:32px;}
+#side-menu{width:260px;}
+#main.shifted{transform:translateX(260px);}
 
-  /* 모바일 호버 효과 제거 */
-  .grid-5:hover .grid-item{opacity:1;}
-  .grid-5:hover .grid-item:hover{opacity:1;}
+/* 모바일 호버 효과 제거 */
+.grid-5:hover .grid-item{opacity:1;}
+.grid-5:hover .grid-item:hover{opacity:1;}
 
-  /* 영상 공백 제거 - 모바일에서 영상이 화면 꽉 차게 */
-  .video-block{height:auto;padding:0;}
-  .yt-iframe{width:100%;aspect-ratio:16/9;display:block;}
+/* 영상 공백 제거 - 모바일에서 영상이 화면 꽉 차게 */
+.video-block{height:auto;padding:0;}
+.yt-iframe{width:100%;aspect-ratio:16/9;display:block;}
 
-  /* 섹션 패딩 축소 */
-  .section-page{padding:80px 16px 60px;}
-  .section-title{font-size:1.4rem;margin-bottom:20px;}
+/* 섹션 패딩 축소 */
+.section-page{padding:80px 16px 60px;}
+.section-title{font-size:1.4rem;margin-bottom:20px;}
 
-  /* 디테일 뷰 모바일 최적화 */
-  .detail-inner{padding:76px 20px 40px;}
-  .detail-img-wrap{padding-right:0;padding-bottom:24px;}
-  .detail-info h2{font-size:1.2rem;}
+/* 디테일 뷰 모바일 최적화 */
+.detail-inner{padding:76px 20px 40px;}
+.detail-img-wrap{padding-right:0;padding-bottom:24px;}
+.detail-info h2{font-size:1.2rem;}
 
-  /* obstacle 모바일 */
-  .obstacle-inner{padding:76px 20px 40px;}
-  .obstacle-top{flex-direction:column;}
+/* obstacle 모바일 */
+.obstacle-inner{padding:76px 20px 40px;}
+.obstacle-top{flex-direction:column;}
 
-  /* 로고 크기 */
-  #logo img{height:46px;}
+/* 로고 크기 */
+#logo img{height:46px;}
 
-  /* PIN 화면 모바일 */
-  #pin-box{width:90%;}
+/* PIN 화면 모바일 */
+#pin-box{width:90%;}
 }
 </style>
+
 </head>
 <body>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
-
 
 <div id="pin-screen">
   <img id="pin-logo" src="https://i.imgur.com/9kOXb0c_d.webp?maxwidth=760&fidelity=grand" alt="BLACKBOARD">
@@ -318,7 +319,9 @@ body > *:not(style){position:relative;}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
 <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
 <script>
 
 // ★ 권한 시스템
@@ -859,5 +862,6 @@ document.addEventListener('keydown',e=>{
   if(document.getElementById('detail-view').classList.contains('open')){if(e.key==='ArrowLeft'&&currentIndex>0)navigateDetail(-1);if(e.key==='ArrowRight'&&currentIndex<currentList.length-1)navigateDetail(1);}
 });
 </script>
+
 </body>
 </html>
